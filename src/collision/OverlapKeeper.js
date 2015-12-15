@@ -32,9 +32,6 @@ OverlapKeeper.prototype.set = function(i, j) {
     while(key > current[index]){
         index++;
     }
-    if(key === current[index]){
-        return; // Pair was already added
-    }
     for(var j=current.length-1; j>=index; j--){
         current[j + 1] = current[j];
     }
