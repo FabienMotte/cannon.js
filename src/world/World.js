@@ -448,20 +448,6 @@ World.prototype.getBodyById = function(id){
     return this.idToBodyMap[id];
 };
 
-// TODO Make a faster map
-World.prototype.getShapeById = function(id){
-    var bodies = this.bodies;
-    for(var i=0, bl = bodies.length; i<bl; i++){
-        var shapes = bodies[i].shapes;
-        for (var j = 0, sl = shapes.length; j < sl; j++) {
-            var shape = shapes[j];
-            if(shape.id === id){
-                return shape;
-            }
-        }
-    }
-};
-
 /**
  * Adds a material to the World.
  * @method addMaterial
@@ -951,8 +937,8 @@ World.prototype.emitContactEvents = (function(){
         shapeB: null
     };
     return function(){
-        var hasBeginContact = this.hasAnyEventListener('beginContact');
-        var hasEndContact = this.hasAnyEventListener('endContact');
+        var hasBeginContact = this.hasEventListener('beginContact');
+        var hasEndContact = this.hasEventListener('endContact');
 
         if(hasBeginContact || hasEndContact){
             this.bodyOverlapKeeper.getDiff(additions, removals);
@@ -962,7 +948,7 @@ World.prototype.emitContactEvents = (function(){
             for (var i = 0, l = additions.length; i < l; i += 2) {
                 beginContactEvent.bodyA = this.getBodyById(additions[i]);
                 beginContactEvent.bodyB = this.getBodyById(additions[i+1]);
-                this.dispatchEvent(beginContactEvent);
+                this.emit(beginContactEvent);
             }
             beginContactEvent.bodyA = beginContactEvent.bodyB = null;
         }
@@ -971,15 +957,15 @@ World.prototype.emitContactEvents = (function(){
             for (var i = 0, l = removals.length; i < l; i += 2) {
                 endContactEvent.bodyA = this.getBodyById(removals[i]);
                 endContactEvent.bodyB = this.getBodyById(removals[i+1]);
-                this.dispatchEvent(endContactEvent);
+                this.emit(endContactEvent);
             }
             endContactEvent.bodyA = endContactEvent.bodyB = null;
         }
 
         additions.length = removals.length = 0;
 
-        var hasBeginShapeContact = this.hasAnyEventListener('beginShapeContact');
-        var hasEndShapeContact = this.hasAnyEventListener('endShapeContact');
+        var hasBeginShapeContact = this.hasEventListener('beginShapeContact');
+        var hasEndShapeContact = this.hasEventListener('endShapeContact');
 
         if(hasBeginShapeContact || hasEndShapeContact){
             this.shapeOverlapKeeper.getDiff(additions, removals);
@@ -987,26 +973,18 @@ World.prototype.emitContactEvents = (function(){
 
         if(hasBeginShapeContact){
             for (var i = 0, l = additions.length; i < l; i += 2) {
-                var shapeA = this.getShapeById(additions[i]);
-                var shapeB = this.getShapeById(additions[i+1]);
-                beginShapeContactEvent.shapeA = shapeA;
-                beginShapeContactEvent.shapeB = shapeB;
-                beginShapeContactEvent.bodyA = shapeA.body;
-                beginShapeContactEvent.bodyB = shapeB.body;
-                this.dispatchEvent(beginShapeContactEvent);
+                beginShapeContactEvent.bodyA = this.getBodyById(additions[i]);
+                beginShapeContactEvent.bodyB = this.getBodyById(additions[i+1]);
+                this.emit(beginShapeContactEvent);
             }
             beginShapeContactEvent.bodyA = beginShapeContactEvent.bodyB = beginShapeContactEvent.shapeA = beginShapeContactEvent.shapeB = null;
         }
 
         if(hasEndShapeContact){
             for (var i = 0, l = removals.length; i < l; i += 2) {
-                var shapeA = this.getShapeById(removals[i]);
-                var shapeB = this.getShapeById(removals[i+1]);
-                endShapeContactEvent.shapeA = shapeA;
-                endShapeContactEvent.shapeB = shapeB;
-                endShapeContactEvent.bodyA = shapeA.body;
-                endShapeContactEvent.bodyB = shapeB.body;
-                this.dispatchEvent(endShapeContactEvent);
+                endShapeContactEvent.bodyA = this.getBodyById(removals[i]);
+                endShapeContactEvent.bodyB = this.getBodyById(removals[i+1]);
+                this.emit(endShapeContactEvent);
             }
             endShapeContactEvent.bodyA = endShapeContactEvent.bodyB = endShapeContactEvent.shapeA = endShapeContactEvent.shapeB = null;
         }

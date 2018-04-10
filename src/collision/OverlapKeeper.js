@@ -61,35 +61,29 @@ function unpackAndPush(array, key){
  * @param  {array} removals
  */
 OverlapKeeper.prototype.getDiff = function(additions, removals) {
+    var i=0, j=0;
     var a = this.current;
     var b = this.previous;
     var al = a.length;
     var bl = b.length;
-
-    var j=0;
-    for (var i = 0; i < al; i++) {
-        var found = false;
-        var keyA = a[i];
-        while(keyA > b[j]){
+    while(i < al && j < bl){
+        var iKey = a[i];
+        var jKey = b[j];
+        if(iKey < jKey){
+            unpackAndPush(removals, jKey);
+            i++;
+        } else if(iKey === jKey){
+            i++;
             j++;
-        }
-        found = keyA === b[j];
-
-        if(!found){
-            unpackAndPush(additions, keyA);
+        } else {
+            unpackAndPush(additions, iKey);
+            j++;
         }
     }
-    j = 0;
-    for (var i = 0; i < bl; i++) {
-        var found = false;
-        var keyB = b[i];
-        while(keyB > a[j]){
-            j++;
-        }
-        found = a[j] === keyB;
-
-        if(!found){
-            unpackAndPush(removals, keyB);
-        }
+    for(var k=i; k<al; k++){
+        unpackAndPush(additions, a[k]);
+    }
+    for(var k=j; k<bl; k++){
+        unpackAndPush(removals, b[k]);
     }
 };
